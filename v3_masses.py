@@ -79,8 +79,10 @@ def generateSample(name,lowerLimit,sampleSize,LogLog=False,xrange=-1,parameterTo
     return plotData
 
 
-data=generateSample("SNRv3_M1_NNorm",8,100000,xrange=(5,100),LogLog=True,norm=True)
-data=generateSample("SNRv3_M1_Norm",8, 100000,xrange=(5,100),LogLog=True,norm=False)
+#data=generateSample("SNRv3_M1_NNorm",8,100000,xrange=(5,100),LogLog=True,norm=True)
+#data=generateSample("SNRv3_M1_Norm",8, 100000,xrange=(5,100),LogLog=True,norm=False)
+
+#tralalalal
 
 #ys=data[0]
 #xs=data[1][:-1]
