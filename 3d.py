@@ -1,9 +1,10 @@
-#from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
+#import colors
 def plotHist2D():
-    sampleData=np.loadtxt("data/v3/SNRv3_M1NNA800_sample10000.gz")
+    sampleData=np.loadtxt("data/v3/SNRv3_M1_NormA800_sample100000.gz")
     maxSNR=max(sampleData[:,0])
     minSNR=8
     maxMz=max(sampleData[:,4])
@@ -31,5 +32,8 @@ def plotHist2D():
     cbar=plt.colorbar(p)
     cbar.ax.set_ylabel('dN/dMz dSNR')
     plt.show()
-    
+
+#print("upps i did it again")
 plotHist2D()
+
+#afas

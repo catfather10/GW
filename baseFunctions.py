@@ -1,4 +1,4 @@
-from constants import H_0,Omega_m,c,mergerRate0 ,A
+from constants import H_0,Omega_m,c,mergerRate0 #,#A
 from scipy import integrate
 import numpy as np
 from numpy.random import random as rng
@@ -28,10 +28,10 @@ def D_L(z):
 #def z_maxOld():
 #    toSolve = lambda z : D_horizon- D_L(z) 
 #    return fsolve(toSolve,.1)
-def z_max(m=1):
+def z_max(A,m=1):
     toSolve = lambda z:A*(m*(1+z)**(5/6))/D_L(z)-2
     return fsolve(toSolve,.1)[0]
-#t=z_max()
+#t=z_max(13000)
 #print(t)
 #print(D_L(t))
     
@@ -57,7 +57,7 @@ def DNSDistribution_z(z): ### dN/dz
 #    return mergerRate(z)/(1+z)*4*np.pi*D_c(z)**2*D_H/E(z)/norm
 #DNSProb_z_vector = np.vectorize(DNSProb_z)
     
-def SNR(Dl,theta,phi,psi,iota,m=1):
+def SNR(Dl,theta,phi,psi,iota,m,A):
     FP=0.5*(1+(np.cos(theta))**2)*np.cos(2*phi)*np.cos(2*psi)-np.cos(theta)*np.sin(2*phi)*np.sin(2*psi)
     FX=0.5*(1+(np.cos(theta))**2)*np.cos(2*phi)*np.sin(2*psi)+np.cos(theta)*np.sin(2*phi)*np.cos(2*psi)
     TH=2*np.sqrt(((FP*(1+(np.cos(iota))**2))**2) +4*(FX*np.cos(iota))**2) 

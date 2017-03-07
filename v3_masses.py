@@ -5,17 +5,25 @@ from baseFunctions import SNR,MonteCarloProb,D_L,z_max,DNSDistribution_z,mergerR
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from scipy import integrate
-from constants import A
+
+def probMerger(z,a):
+    return
 
 #ProbMax_z=DNSProb_z(z_max())
 
-#masses=np.loadtxt("data/ABHBH02_masses.gz")
-#masses=np.loadtxt("data/oneMass.txt")
+masses=np.loadtxt("data/ABHBH02_masses.gz")
+masses=np.loadtxt("data/oneMass.txt")
+
 #def randMass():
 #    return(np.random.choice(masses))
-   
 
-def randNS():
+M=1
+DNSDistribution_z_Norm=integrate.quad(DNSDistribution_z,0,z_max(M))[0] ###uwzglednia rozne zmax dla roznych mas
+def probZ(z):
+    return DNSDistribution_z(z)/DNSDistribution_z_Norm 
+ProbMax_z = probZ(z_max(M))
+    
+def randNS(A,SU):
     cosTh=rng()*2 -1
     Theta=np.arccos(cosTh)
     Phi=2*np.pi*rng()
@@ -23,22 +31,23 @@ def randNS():
     Iota=np.arccos(cosIo)
     Psi=2*np.pi*rng()
     M=1
-#    M=randMass()
-    DNSDistribution_z_Norm=integrate.quad(DNSDistribution_z,0,z_max(M))[0] ###uwzglednia rozne zmax dla roznych mas
-    probZ=lambda z: DNSDistribution_z(z)/DNSDistribution_z_Norm 
-    ProbMax_z=probZ(z_max(M))
+#    if(SU):
+#        M=randMass()
+#    else:
+#        M=1
+#    DNSDistribution_z_Norm=integrate.quad(DNSDistribution_z,0,z_max(M))[0] ###uwzglednia rozne zmax dla roznych mas
+#    probZ=lambda z: DNSDistribution_z(z)/DNSDistribution_z_Norm 
+#    ProbMax_z=probZ(z_max(M))
     randomZ=MonteCarloProb(probZ,(0,z_max(M)),(0,ProbMax_z))
     Dl=D_L(randomZ)  
-#    print(z_max(M))
-#    print(SNR(Dl,Theta,Phi,Psi,Iota,m=M*(1+randomZ)))
-    return (SNR(Dl,Theta,Phi,Psi,Iota,m=M*(1+randomZ)),Dl,M,randomZ,M*(1+randomZ),Theta,Phi,Psi,Iota)
-    
-    
-def generateSample(name,lowerLimit,sampleSize,LogLog=False,xrange=-1,parameterToReturn=0,norm=False):
+    return (SNR(Dl,Theta,Phi,Psi,Iota,M*(1+randomZ),A),Dl,M,randomZ,M*(1+randomZ),Theta,Phi,Psi,Iota)
+          
+def generateSample(name,lowerLimit,sampleSize,A,SU=False,LogLog=False,xrange=-1,parameterToReturn=0,norm=False):
     binsNr,draws,k,current,last,SNRs,sampleData=200,0,0,0,0,[],[]
     while(k<sampleSize):
         draws+=1
-        randomSample=randNS()
+#        randomSample=randNSjit()
+        randomSample=randNS(A,SU)
         temp=randomSample[parameterToReturn]
         if(temp>lowerLimit):
             SNRs.append(temp)
@@ -74,15 +83,18 @@ def generateSample(name,lowerLimit,sampleSize,LogLog=False,xrange=-1,parameterTo
         plotData=plt.hist(SNRs,bins=binsNr,normed =norm) 
     plt.savefig(file,dpi=300)
     plt.show()
+    plt.clf()
     np.savetxt("data/v3/"+name+"A"+str(A)+"_sample"+str(sampleSize)+".gz",sampleData)
 #    np.savetxt("data/v3/"+name+"_sample"+str(sampleSize)+".txt",sampleData)
     return plotData
 
+ile=10000
+normFlag=False
+SUFlag=False
 
-#data=generateSample("SNRv3_M1_NNorm",8,100000,xrange=(5,100),LogLog=True,norm=True)
-#data=generateSample("SNRv3_M1_Norm",8, 100000,xrange=(5,100),LogLog=True,norm=False)
-
-#tralalalal
+#data=generateSample("SNRv3_M1",8,ile,A=13000,SU=SUFlag,xrange=(5,100),LogLog=True,norm=normFlag)
+data=generateSample("SNRv3_M1",8,ile,A=8000,SU=SUFlag,xrange=(5,100),LogLog=True,norm=normFlag)
+data=generateSample("SNRv3_M1",8,ile,A=800,SU=SUFlag,xrange=(5,100),LogLog=True,norm=normFlag)
 
 #ys=data[0]
 #xs=data[1][:-1]
