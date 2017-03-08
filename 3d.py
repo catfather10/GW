@@ -2,7 +2,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
-#import colors
 def plotHist2D():
     sampleData=np.loadtxt("data/v3/SNRv3_M1_NormA800_sample100000.gz")
     maxSNR=max(sampleData[:,0])
