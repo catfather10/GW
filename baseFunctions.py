@@ -37,8 +37,11 @@ def z_from_DT(DT):
     toSolve = lambda z : DT- D_T(z) 
     return fsolve(toSolve,.1)
     
-def DNSDistribution_z(z,mergerRateFun): ### dN/dz
-    return mergerRateFun(z)/(1+z)*4*np.pi*D_c(z)**2*D_H/E(z)
+def DNSDistribution_z(z,mergerRateFun,zMax): ### dN/dz
+    if(z<=zMax):
+        return mergerRateFun(z)/(1+z)*4*np.pi*D_c(z)**2*D_H/E(z)
+    else:
+        return 0
     
 def SNR(Dl,theta,phi,psi,iota,m,A):
     FP=0.5*(1+(np.cos(theta))**2)*np.cos(2*phi)*np.cos(2*psi)-np.cos(theta)*np.sin(2*phi)*np.sin(2*psi)
@@ -53,8 +56,8 @@ def MonteCarloProb(probFun,xRange,yRange):
         x=rng()*(xRange[1]-xRange[0])+xRange[0]
         y=rng()*(yRange[1]-yRange[0])+yRange[0]
         if(probFun(x)>y):
-#            return k
-#            print(k) #### !!!!!!!!!!!!
+#            return k #### !!!!!!!!!!!!
+#            print(k) 
             return x
             
 def plotAndSave(name,xs,ys,xLab,yLab,LogLog=False,saveName=0,xrange=-1):

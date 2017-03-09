@@ -1,5 +1,5 @@
 ##dodano masy z syntheticuniverse
-import subprocess
+#import subprocess
 import numpy as np
 from numpy.random import random as rng
 from baseFunctions import SNR,MonteCarloProb,D_L,DNSDistribution_z#,z_max
@@ -24,10 +24,12 @@ def randNS(A,SU,mergerRateFunCoef):
     M=1
     if(SU):
         M,zMaxFromFile,probMaxFromFile,NormFromFile=randMassData()
-        dnsd1=lambda z: DNSDistribution_z(z,lambda z:(1+z)**(mergerRateFunCoef)) #### DNSDistribution_z z zadanym mergerRateFun
+        dnsd1=lambda z: DNSDistribution_z(z,lambda z:(1+z)**(mergerRateFunCoef),zMaxFromFile) #### DNSDistribution_z z zadanym mergerRateFun
         probZ=lambda z: dnsd1(z)/NormFromFile 
     randomZ=MonteCarloProb(probZ,(0,zMaxFromFile),(0,probMaxFromFile))
+#    print("przed liczeniem dl")
     Dl=D_L(randomZ)  
+#    print("po liczeniem dl")
     return (SNR(Dl,Theta,Phi,Psi,Iota,M*(1+randomZ),A),Dl,M,randomZ,M*(1+randomZ),Theta,Phi,Psi,Iota)
           
 def generateSample(name,sampleSize,A,mergerRateFunCoef,SU=False,LogLog=True,parameterToReturn=0,norm=False,forceToPrecalc=False):
@@ -51,7 +53,6 @@ def generateSample(name,sampleSize,A,mergerRateFunCoef,SU=False,LogLog=True,para
         draws+=1
         randomSample=randNS(A,SU,mergerRateFunCoef)
         temp=randomSample[parameterToReturn]
-        print(temp)
         if(temp>8):
             SNRs.append(temp)
             sampleData.append(randomSample)
@@ -70,6 +71,7 @@ def generateSample(name,sampleSize,A,mergerRateFunCoef,SU=False,LogLog=True,para
         plt.ylabel("dN/dSNR")
     plt.tick_params(direction= "inout",which="both")
     if(LogLog):
+        plt.xlim((10,1000))
         plt.gca().set_xscale("log")
         plt.gca().set_yscale("log")
         plt.title(name+"A"+str(A)+"_LogLog")
@@ -87,10 +89,11 @@ def generateSample(name,sampleSize,A,mergerRateFunCoef,SU=False,LogLog=True,para
     print('Done in this many minutes: '+str((doneTime-startTime)/60))
     return plotData
 
-ile=10
+ile=100000
 normFlag=True
 SUFlag=False
 forceFlag=False
+startTime = time.time()   
 for a in range(0,4):
 #    SUFlag=False
 #    print('a='+str(a)+' A='+str(8000)+' m1')
@@ -102,6 +105,7 @@ for a in range(0,4):
     data=generateSample("SNRv3_mSU02_a"+str(a)+'_',ile,A=800,mergerRateFunCoef=a,SU=SUFlag,norm=normFlag,forceToPrecalc=forceFlag)
     print('a='+str(a)+' A='+str(8000)+' mSU')
     data=generateSample("SNRv3_mSU02_a"+str(a)+'_',ile,A=8000,mergerRateFunCoef=a,SU=SUFlag,norm=normFlag,forceToPrecalc=forceFlag)
-
+doneTime = time.time()
+print('In total done in this many minutes: '+str((doneTime-startTime)/60))
 #turn off PC:
-subprocess.call(["shutdown", "/s"])
+#subprocess.call(["shutdown", "/s"])
