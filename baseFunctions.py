@@ -47,10 +47,14 @@ def SNR(Dl,theta,phi,psi,iota,m,A):
     return A*TH*m**(5/6)/Dl
     
 def MonteCarloProb(probFun,xRange,yRange):
+    k=0
     while (True):
+        k+=1
         x=rng()*(xRange[1]-xRange[0])+xRange[0]
         y=rng()*(yRange[1]-yRange[0])+yRange[0]
         if(probFun(x)>y):
+#            return k
+#            print(k) #### !!!!!!!!!!!!
             return x
             
 def plotAndSave(name,xs,ys,xLab,yLab,LogLog=False,saveName=0,xrange=-1):
