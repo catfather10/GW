@@ -2,8 +2,11 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import numpy as np
-def plotHist2D():
-    sampleData=np.loadtxt("data/v3/SNRv3_M1_NormA800_sample100000.gz")
+
+
+
+def plotHist2D(mrange):
+    sampleData=np.loadtxt("data/v3/"+f+"_sample100000.gz")
     maxSNR=max(sampleData[:,0])
     minSNR=8
     maxMz=max(sampleData[:,4])
@@ -19,20 +22,30 @@ def plotHist2D():
     fig = plt.figure(figsize=(7, 3))
     H, xedges, yedges = np.histogram2d(x, y, bins=(xedges, yedges))
     H = H.T  # Let each row list bins with common y range.
-
-    ax = fig.add_subplot(111, title="SNR-Mz_LogLogLog")
+    ax = fig.add_subplot(111, title=f)
     plt.xlabel('SNR')
     plt.ylabel('Mz')
+    plt.tick_params(direction= "inout",which="both")
 
     X, Y = np.meshgrid(xedges, yedges)
     p=ax.pcolormesh(X, Y, H,norm=colors.LogNorm(vmin=1, vmax=H.max()))
     plt.gca().set_xscale("log")
     plt.gca().set_yscale("log")
+    plt.xlim((7,1000))
+    plt.ylim(mrange)
     cbar=plt.colorbar(p)
-    cbar.ax.set_ylabel('dN/dMz dSNR')
+    cbar.ax.set_ylabel('dP/dMz dSNR')
     plt.show()
+    plt.savefig("pics/v3/"+f+"_sample100000_3D.png",dpi=300)
 
 #print("upps i did it again")
-plotHist2D()
+for a in range(0,4):
+    print(a)
+    f='SNRv3_mSU02_a'+str(a)+'_A8000'
+    plotHist2D((5,300))
+    plt.clf()
+    f='SNRv3_mSU02_a'+str(a)+'_A800'
+    plotHist2D((5,30))
+    plt.clf()
 
 #afas
