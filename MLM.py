@@ -9,25 +9,28 @@ def round_down(num, divisor):
     return num - (num%divisor)
     
 AtoSim=6400
-dataModel1=np.loadtxt("data/v3/SNRv3_mSU02_a0_A"+str(AtoSim)+"_sample100000.gz")[:,0]
-histData=np.histogram(dataModel1,bins=600)
-ys=histData[0]
-xs=histData[1][:-1]
-#ys=[i for i in ys if i !=0]
-ys2=[]
-xs2=[]
-#print(len(xs),len(ys))
-for i in range (len(xs)):
-    if(ys[i]!=0):
-        ys2.append(ys[i])
-        xs2.append(xs[i])
-ys=ys2/np.sum(ys2)
-xs=xs2
-#print(len(xs),len(ys))
-#print(min(ys))
-xInterpolatedMax=max(xs)
-xInterpolatedMin=min(xs)
-f=interp1d(xs,ys,kind='linear')
+def interpolate(model):
+    dataModel1=np.loadtxt("data/v3/SNRv3_mSU02_a1_A"+str(AtoSim)+"_sample100000.gz")[:,0]
+    histData=np.histogram(dataModel1,bins=600)
+    ys=histData[0]
+    xs=histData[1][:-1]
+    #ys=[i for i in ys if i !=0]
+    ys2=[]
+    xs2=[]
+    #print(len(xs),len(ys))
+    for i in range (len(xs)):
+        if(ys[i]!=0):
+            ys2.append(ys[i])
+            xs2.append(xs[i])
+    ys=ys2/np.sum(ys2)
+    xs=xs2
+    #print(len(xs),len(ys))
+    #print(min(ys))
+    xInterpolatedMax=max(xs)
+    xInterpolatedMin=min(xs)
+    f1=interp1d(xs,ys,kind='linear')
+    return f1,(xInterpolatedMin,xInterpolatedMax)
+    
 
 #xs1=np.linspace(min(xs),max(xs),num=6000)
 #ys1=f(xs1)

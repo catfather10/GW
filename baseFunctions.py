@@ -3,6 +3,9 @@ import numpy as np
 from numpy.random import random as rng
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+from numba import jit
+from scipy.optimize import minimize
+plt.rc('text', usetex=True)
 
 ####stałe
 H_0=70.4 # km/s  Mpc^-1
@@ -11,93 +14,77 @@ Omega_lambda=1-Omega_m
 c=299792 # km/s
 D_H=c/H_0
 
-    
-def E(z): # z = redshift
+@jit(nopython=True) 
+def E(z):
     return np.sqrt(Omega_m*(1+z)**3+(1-Omega_m))
     
 def D_c(z):
     z2=lambda z: 1/E(z)
-    return D_H*integrate.quad(z2,0,z)[0]  
+    return D_H*integrate.quad(z2,0,z)[0] 
+
+@jit
 def D_L(z):
     return (1+z)*D_c(z)
-    
-def z_max(A,m):
-    toSolve = lambda z:A*(m*(1+z)**(5/6))/D_L(z)-2
-    return fsolve(toSolve,.1)[0]
-    
-def z_from_Dl(Dl):
-    toSolve = lambda z : Dl- D_L(z) 
-    return fsolve(toSolve,.1)
-    
-def D_T(z):
-    z2=lambda z: 1/(E(z)*(1+z))
-    return D_H*integrate.quad(z2,0,z)[0]
 
-def z_from_DT(DT):
-    toSolve = lambda z : DT- D_T(z) 
-    return fsolve(toSolve,.1)
-    
-def DNSDistribution_z(z,mergerRateFun,zMax): ### dN/dz
+def zMaxGet(A,m):
+    toSolve = lambda z:A*(m*(1+z))**(5/6)/D_L(z)-2
+    return fsolve(toSolve,.1)[0]
+        
+def DNSDistribution(z,mergerRateFun,zMax): ### dN/dz
     if(z<=zMax):
-        return mergerRateFun(z)/(1+z)*4*np.pi*D_c(z)**2*D_H/E(z)
+        return mergerRateFun(z)*4*np.pi*D_H*(D_c(z))**2/(E(z)*(1+z))
     else:
         return 0
-    
-def SNR(Dl,theta,phi,psi,iota,m,A):
+                
+@jit(nopython=True)
+def SNR(Dl,theta,phi,psi,iota,mz,A):
     FP=0.5*(1+(np.cos(theta))**2)*np.cos(2*phi)*np.cos(2*psi)-np.cos(theta)*np.sin(2*phi)*np.sin(2*psi)
     FX=0.5*(1+(np.cos(theta))**2)*np.cos(2*phi)*np.sin(2*psi)+np.cos(theta)*np.sin(2*phi)*np.cos(2*psi)
     TH=2*np.sqrt(((FP*(1+(np.cos(iota))**2))**2) +4*(FX*np.cos(iota))**2) 
-    return A*TH*m**(5/6)/Dl
-    
-def MonteCarloProb(probFun,xRange,yRange):
+    return A*TH*mz**(5/6)/Dl
+   
+def MonteCarloSampling(probFun,xRange,yRange):
     k=0
     while (True):
         k+=1
         x=rng()*(xRange[1]-xRange[0])+xRange[0]
         y=rng()*(yRange[1]-yRange[0])+yRange[0]
         if(probFun(x)>y):
-#            return k #### !!!!!!!!!!!!
-#            print(k) 
             return x
             
-def plotAndSave(name,xs,ys,xLab,yLab,LogLog=False,saveName=0,xrange=-1):
-    plt.xlabel(xLab)
-    plt.ylabel(yLab)
-    if(LogLog):
-        name+=" LogLog"
-    plt.title(name)
-    plt.plot(xs,ys)
-    if(saveName!=0):
-        name=saveName
-    if (LogLog):
-        plt.xscale('log')
-        plt.yscale('log')
-        name+="_LogLog"
-    plt.savefig("pics/v2/"+name+".png",dpi=150)
-    
-def V_c(z):
-    return 4*np.pi*D_c(z)**2*D_H/E(z)
-    
+"""
+to do
+def InverseTransformSampling(...):
 
-      
-#m=1
-#toSolve= lambda z: SNR(D_L(z),)
-#t=fsolve(toSolve,.1)
-#print(t)
-#print(z_max())
+"""
+            
 
-   
-   
-### testy Gestosc prawdopodobienstwa        
-#print(z_max())
-#xs=np.linspace(0, z_max(), num=100)
-#ys=DNSProb_z_vector(xs)
-##plotAndSave("Gestosc prawdopodobienstwa",xs,ys,"redshift","dP/dz",saveName="ProbDens_z")
-##plotAndSave("Gestosc prawdopodobienstwa",xs,ys,"redshift","dP/dz",LogLog=True,saveName="ProbDens_z")
-#plotAndSave("Gestosc prawdopodobienstwa_Dhorizon=10Gpc",xs,ys,"redshift","dP/dz",saveName="ProbDens_z_Dhorizon=10Gpc")
-#plotAndSave("Gestosc prawdopodobienstwa_Dhorizon=10Gpc",xs,ys,"redshift","dP/dz",LogLog=True,saveName="ProbDens_z_Dhorizon=10Gpc")
-#fitFun =lambda x,a: a*x**2 
-#popt, pcov = curve_fit(f=fitFun, xdata=xs, ydata=ys,p0=(1))
-#print(popt)
-#print(np.sqrt(np.diag(pcov)))
+###szybki wykres DNSDistribution_z
+coef=1.4
+A=800
+mz=13.054006
+zm=zMaxGet(A,mz)
+g2=lambda x: DNSDistribution(x,lambda z:(1+z)**coef,zm)
+norm=integrate.quad(g2,0,zm)[0]
+print('zmax: ',zm)
+xs=np.linspace(0,zm,num=1000)
+ys=[]
+for x in xs:
+    ys.append(DNSDistribution(x,lambda z:(1+z)**coef,zm)/norm)
+ys=np.array(ys)
+#print(ys)
+
+
+
+print('norm',norm)
+t=minimize(lambda z:-1*g2(z)/norm,0.01,bounds=((0,zm),))
+print('probMax: ',-1*t.fun[0])
+#ys=ys/norm
+print('trapz: ',integrate.trapz(ys,xs))
+plt.plot(xs,ys)
+plt.show()
+data=np.loadtxt('data/mass/ABHBH02_mass_A_6400_a0.0.gz')[:,0]
+print(max(data))
+
+            
 

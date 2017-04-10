@@ -4,7 +4,7 @@ import matplotlib.colors as colors
 import numpy as np
 from numba import jit
 
-def plotHist2D(mrange):
+def plotHist3D(mrange):
     sampleData=np.loadtxt("data/v3/"+f+"_sample100000.gz")
     maxSNR=max(sampleData[:,0])
     minSNR=8
@@ -41,13 +41,13 @@ def plotHist2D(mrange):
 #for a in range(0,2):
 #    print(a)
 ##    f='SNRv3_mSU02_a'+str(a)+'_A8000'
-##    plotHist2D((5,300))
+##    plotHist3D((5,300))
 ##    plt.clf()
 ##    f='SNRv3_mSU02_a'+str(a)+'_A800'
-##    plotHist2D((5,30))
+##    plotHist3D((5,30))
 ##    plt.clf()
 #    f='SNRv3_mSU02_a'+str(a)+'_A6400'
-#    plotHist2D((5,300))
+#    plotHist3D((5,300))
 #    plt.clf()
     
 def histAndSaveLogLog(data,xLab,yLab,title,saveName,xrange=0,normed=False,yLog=True):
