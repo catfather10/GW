@@ -9,11 +9,14 @@ import time
 def round_down(num, divisor):
     return num - (num%divisor)
     
-A=800
+A=800  
 def interpolateSNR(modelCoef):
-    dataModel=np.loadtxt("SNR/"+str(A)+"/SNRv3_mSU02_a"+str(modelCoef)+"_A"+str(A)+"_sample100000.gz")[:,0]
-    histData=np.histogram(dataModel,bins=600)
-#    plt.show()
+    dataModel=np.loadtxt("SNR/"+str(A)+"/SNRv3_mSU02_a"+str(modelCoef)+"_A"+str(A)+"_sample100000.txt")[:,0]
+    binsNr=201
+    histData=plt.hist(dataModel,bins=np.logspace(start=np.log10(min(dataModel)),stop=np.log10(max(dataModel)),\
+        num=binsNr),normed=True)
+    plt.show()
+    plt.clf()
     ys=histData[0]
     xs=histData[1][:-1]
     #ys=[i for i in ys if i !=0]
@@ -24,8 +27,8 @@ def interpolateSNR(modelCoef):
         if(ys[i]!=0):
             ys2.append(ys[i])
             xs2.append(xs[i])
-    ys=ys2/np.sum(ys2)
-#    print('sum ', np.sum(ys2))
+    ys=ys2#/np.sum(ys2)
+    print('sum ', np.sum(ys2))
     xs=xs2
     #print(len(xs),len(ys))
     #print(min(ys))
@@ -35,21 +38,31 @@ def interpolateSNR(modelCoef):
     return f1,xInterpolatedMin,xInterpolatedMax
     
 f0,xInterpolatedMin0,xInterpolatedMax0=interpolateSNR(modelCoef=0)
-#xs1=np.linspace(xInterpolatedMin,xInterpolatedMax,num=6000)
-#ys1=f0(xs1)
-#print(integrate.simps(ys1,xs1))
-#plt.gca().set_xscale("log")
-#plt.gca().set_yscale("log")
-#plt.plot(xs1,ys1,'g')
+xs1=np.linspace(xInterpolatedMin0,xInterpolatedMax0,num=6000)
+ys1=f0(xs1)
+print('simps int: ',integrate.simps(ys1,xs1))
+plt.gca().set_xscale("log")
+plt.gca().set_yscale("log")
+plt.plot(xs1,ys1,'g')
+plt.savefig('model0.png')
+
+#binsNr=600
+#data=np.loadtxt('SNR/1600/SNRv3_mSU02_a0_A1600_sample100000.gz')[:,0]
+#histData=plt.hist(data,bins=np.logspace(start=np.log10(min(data)),stop=np.log10(max(data)),\
+#        num=binsNr),normed=True)
+
 
 f1,xInterpolatedMin1,xInterpolatedMax1=interpolateSNR(modelCoef=1)
-#xs1=np.linspace(xInterpolatedMin,xInterpolatedMax,num=6000)
-#ys1=f1(xs1)
-#print(integrate.simps(ys1,xs1))
-#plt.gca().set_xscale("log")
-#plt.gca().set_yscale("log")
-#plt.plot(xs1,ys1,'r')
-#plt.show()
+xs1=np.linspace(xInterpolatedMin1,xInterpolatedMax1,num=6000)
+ys1=f1(xs1)
+print('simps int: ',integrate.simps(ys1,xs1))
+plt.gca().set_xscale("log")
+plt.gca().set_yscale("log")
+plt.plot(xs1,ys1,'r')
+plt.savefig('model1.png')
+plt.show()
+plt.clf()
+
 
 xInterpolatedMin=max(xInterpolatedMin1,xInterpolatedMin0)
 xInterpolatedMax=min(xInterpolatedMax1,xInterpolatedMax0)
@@ -92,19 +105,14 @@ def MLM(size,samples):
     return Os
     
 
-#def MLMPlots(): 
-#    import matplotlib.pyplot as plt
-#    plt.clf()
-#    for s in [3,6,10,30,60,100]:
-#        data=np.loadtxt('MLM/'+str(AtoSim)+'/BayesFactors_'+str(AtoSim)+'_'+str(s)+'_10000.txt')
-#        title='Bayes Factors A: '+str(AtoSim)+' sampleSize: '+str(size)+' samples: '+str(s)
-#        histAndSaveLogLog(data,'Bayes Factor',r'$\frac{dN}{dO}$',title,\
-#        'MLM/'+str(AtoSim)+'/BayesFactors_'+str(AtoSim)+'_'+str(size)+'_'+str(s)+'.png',yLog=False)
-
-
 print('loaded')
 samples=10000
+for t in [60,100]:
+    MLM(size=t,samples=samples)
+A=1600    
 for t in [3,6,10,30,60,100]:
     MLM(size=t,samples=samples)
+import subprocess
+subprocess.call(["shutdown", "/s"])
 
 

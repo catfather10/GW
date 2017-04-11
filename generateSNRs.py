@@ -31,7 +31,7 @@ def randNS(A,mergerRateFunCoef,zmax,norm,probmax):
     Dl=D_L(randomZ)  
     return (SNR(Dl,Theta,Phi,Psi,Iota,M*(1+randomZ),A),Dl,M,randomZ,M*(1+randomZ),Theta,Phi,Psi,Iota)
           
-def generateSample(name,sampleSize,A,mergerRateFunCoef,paramToReturn=0,saveFlag=True):
+def generateSample(name,sampleSize,A,mergerRateFunCoef,saveFlag=True):
     startTime = time.time()  
     print('A: ',A)
     file1='ABHBH02'
@@ -58,9 +58,9 @@ def generateSample(name,sampleSize,A,mergerRateFunCoef,paramToReturn=0,saveFlag=
     while(k<sampleSize):
         draws+=1
         randomSample=randNS(A,mergerRateFunCoef,zMaxGeneral,normGeneral,probMaxGeneral)
-        temp=randomSample[paramToReturn]
-        if(temp>8):
-            SNRs.append(temp)
+        tempSNR=randomSample[0]
+        if(tempSNR>8):
+            SNRs.append(tempSNR)
             sampleData.append(randomSample)
             k+=1
             if(current!=last):
