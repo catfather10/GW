@@ -68,15 +68,19 @@ def histAndSaveLogLog(data,xLab,yLab,title,saveName,xrange=0,normed=False,yLog=T
     plt.tick_params(direction= "inout",which="both")
     plt.title(title)
     
-    histData=plt.hist(data,bins=np.logspace(start=np.log10(min(data)),stop=np.log10(max(data)),num=binsNr),normed=normed)
+    histData=plt.hist(data,bins=np.logspace(start=np.log10(min(data)),stop=np.log10(max(data)),\
+        num=binsNr),normed=normed)
     plt.savefig(saveName,dpi=300)
     plt.clf()
 #    plt.show()
     return histData
-    
+
+#plt.rc('text', usetex=False)
 #for a in range(0,2):
-#    for A in [6400]:#,8000]:
+#    for A in [1600]:#,8000]:
 #        print(a,A)
-#        x=np.loadtxt("data/v3/SNRv3_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.gz")[:,0]
-#        histAndSaveLogLog(x,'SNR','dP/dSNR',"SNRv3_mSU02_a"+str(a)+"_A"+str(A),"pics/v3/SNRv3_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.png",xrange=(8,1000))
+#        x=np.loadtxt("SNR/"+str(A)+"/SNRv3_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.gz")[:,0]
+#        histAndSaveLogLog(x,'SNR','dN/dSNR',"SNRv3_mSU02_a"+str(a)+"_A"+str(A),\
+#                            "SNR/"+str(A)+"/SNRv3_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.png",\
+#        xrange=(8,1000),normed=False)
 #        plt.clf()

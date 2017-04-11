@@ -1,33 +1,68 @@
-\documentclass{minimal}
+\documentclass{article}
 \usepackage[T1]{fontenc}
 \usepackage[polish]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
+\usepackage{hyperref}
 \begin{document}
-Korzystałem głównie z pracy \textbf{Hubble without the Hubble:
-Cosmology using advanced gravitational-wave detectors alone} i do niej odnoszą się numery wzorów.
-Przyjąłem wartości stałych: $D_{horizon} = 500 Mpc\ \Omega_m = 0.27$, $\Omega_\Lambda = 1-\Omega_m =0.73$ , $H_0=70.4 \frac{km}{s\cdot Mpc}$.
-\newline
-Punktem wyjścia jest wzór (24)
-\begin{equation*}
-\frac{d^4N}{dt d\Theta dz d \mathcal{M}}=\frac{dV_c}{dz}\frac{\dot{n}(z)}{1+z} \mathcal{P}(\mathcal{M})\mathcal{P}(\Theta)
-\end{equation*}
-gdzie $\dot{n}(z)$ to \textit{merger rate density}. Całkując po masach i parametrze kątowym $\Theta$, pomijając zależność od czasu i korzystając z tego, że $:\frac{dV_c}{dz}= \frac{4\pi D_c(z)^2 D_H}{E(z)}$ (21) dostaję rozkład w zależności od $z$
-\begin{equation*}
-\frac{dN}{dz}=\frac{4\pi D_c(z)^2 D_H}{E(z)}\frac{\dot{n}(z)}{1+z} 
-\end{equation*}
-Aby z powyższego otrzymać prawdopodobieństwo $\frac{dP}{dz}$, dla danej masy $M_z$ wyznaczam $z_{max}$ rozwiązując równanie:
-\begin{equation*}
-\frac{A\cdot m(1+z)^{5/6}}{D_L(z)}-2=0
-\end{equation*}
-Po normalizacji przez całkę od $0$ do $z_{max}$, dostaję gęstość prawdopodobieństwa $\frac{dP}{dz}$, zgodnie z którą później będą losowane przesunięcia ku czerwieni. Dalej wylosowane przesunięcia ku czerwieni zamieniam w odległości jasnościowe $D_L$ korzystając z (19) i (20):
-\begin{equation*}
+\title{Rozkład jasności źródeł fal grawitacyjnych - opis}
+\maketitle
+\tableofcontents
+Przyjęte wartości stałych:
+\begin{itemize}
+\item $\Omega_m = 0.27$
+\item $\Omega_\Lambda = 1-\Omega_m =0.73$
+\item $H_0=70.4 \frac{km}{s\cdot Mpc}$
+\end{itemize}
+\section{Losowanie zdarzeń}
+\subsection{Losowanie położenia na niebie}
+Niech $U\in[0;1]$ będzie zmienna losową z jednostajnego ciągłego rozkładu. Losowane są 4 kąty:
+\begin{itemize}
+\item$cos\theta=2U-1$
+\item$\phi=2\pi U$
+\item$cos\iota=2U-1$
+\item$\psi=2\pi U$
+\end{itemize}
+\subsection{Losowanie masy}
+Źródłem mas jest plik z \textit{Synthetic Universe}: Double Compact Objects $\triangleright$ Local $\triangleright$ Standard $\triangleright$ ABHBH02.dat .
+\subsection{Losowanie przesunięcia ku czerwieni}
+Punktem wyjścia jest wzór \cite[,Wzór 24]{hubble}
+
+\begin{equation}
+\frac{d^4N}{dt d\Theta dz d \mathcal{M}}=\frac{dV_c}{dz}\frac{\dot{n}(z)}{1+z} \mathcal{P}(\mathcal{M})\mathcal{P}(\Theta)  
+\end{equation}
+gdzie $\dot{n}(z)$ to \textit{merger rate density}. Całkując po masach i parametrze kątowym $\Theta$, pomijając zależność od czasu i korzystając z tego, że $:\frac{dV_c}{dz}= \frac{4\pi D_c(z)^2 D_H}{E(z)}$ \cite[,Wzór 21]{hubble} dostaję rozkład w zależności od $z$
+\begin{equation}
+\frac{dN}{dz}=\begin{cases}\frac{4\pi D_c(z)^2 D_H}{E(z)}\frac{\dot{n}(z)}{1+z}  & z\in[0;z_{max}]\\
+0 & z\notin[0;z_{max}]
+\end{cases}.
+\end{equation}
+Aby z powyższego otrzymać prawdopodobieństwo $\frac{dP}{dz}$, dla największej masy $M$ wyznaczane jest $z_{max}$ rozwiązujące równanie:
+\begin{equation}
+\frac{A (M(1+z))^{5/6}}{D_L(z)}-\frac{\mbox{ SNR}_{min}}{4}=0
+\end{equation}
+dla $\mbox{ SNR}_{min} = 8$. Dzielenie $\mbox{ SNR}_{min}$ przez 4 w powyższym wynika z czynnika kątowego $\Theta \in[0;4] $. Po normalizacji przez całkę od $0$ do $z_{max}$, otrzymywana jest gęstość prawdopodobieństwa $\frac{dP}{dz}$. Wyznaczane jest maksymalne prawdopodobieństwo $ \frac{dP_{max}}{dz}$ używane do ograniczenia obszaru losowania $z$ metodą Monte Carlo.
+\subsection{Generowanie próbki}
+Z wylosowanych przesunięć ku czerwieni obliczane są odległości jasnościowe $D_L$ korzystając z \cite[,Wzór 19]{hubble} i \cite[,Wzór 20]{hubble}:
+\begin{equation}
 D_L(z)=(1+z) D_c(z)=(1+z)D_H \int_{0}^{z}\dfrac{dz^\prime}{E(z^\prime)}
-\end{equation*}
-\begin{equation*}
+\end{equation}
+\begin{equation}
 E(z)=\sqrt{\Omega_m(1+z)^3+\Omega_\Lambda},\ D_H=\frac{c}{H_0}
-\end{equation*}
+\end{equation}
+
+Wylosowane zdarzenie jest zapisywane jeśli jego $\mbox{SNR} \geq \mbox{SNR}_{min}=8$
+\begin{equation}
+\mbox{SNR}=\frac{A\Theta(\theta, \psi, \iota, \psi) M_z^{5/6}}{D_L}
+\end{equation}
+\section{Metoda największej wiarygodności}
+Porównywane są: model $\alpha=0$ : $\dot n (z)=const $ i model $\alpha=1$ : $\dot n (z)=1+z $. Z wcześniej wygenerowanej próbki 100 000 zdarzeń otrzymywana jest metodą interpolacji analityczna postać $\left.\frac{dP}{d\mbox{SNR}} \right |_{\alpha=1}$ i $\left.\frac{dP}{d\mbox{SNR}} \right |_{\alpha=0}$. Wiarygodność (\textit{likelihood}) to $\mathcal{L}=\prod_{i=0}^{n}=\frac{dP}{d\mbox{SNR}}(x_i)$ dla $n\in\{3,6,10,30,60,100\}$. Następnie obliczany jest \textit{Bayes factor} $ \mathcal{O}=\frac{\mathcal{L}(\alpha =1)}{\mathcal{L}(\alpha =0)}$ dla 10 000 próbek o wielkości $n$
 
 
+\begin{thebibliography}{9}
+\bibitem{hubble}
+Hubble without the Hubble: cosmology using advanced gravitational-wave detectors alone
+\url{https://arxiv.org/abs/1108.5161v2}
+\end{thebibliography}
 
 \end{document}

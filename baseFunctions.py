@@ -52,39 +52,63 @@ def MonteCarloSampling(probFun,xRange,yRange):
         if(probFun(x)>y):
             return x
             
+'''
+def InverseTransformSampling(probFun):
+    u=rng()
+    toSolve=lambda x: integrate.quad(probFun,0,x)[0] -u
+    return fsolve(toSolve,0)[0]
+'''
 """
-to do
-def InverseTransformSampling(...):
-
-"""
-            
-
-###szybki wykres DNSDistribution_z
-coef=1.4
-A=800
-mz=13.054006
-zm=zMaxGet(A,mz)
-g2=lambda x: DNSDistribution(x,lambda z:(1+z)**coef,zm)
-norm=integrate.quad(g2,0,zm)[0]
-print('zmax: ',zm)
-xs=np.linspace(0,zm,num=1000)
-ys=[]
-for x in xs:
-    ys.append(DNSDistribution(x,lambda z:(1+z)**coef,zm)/norm)
-ys=np.array(ys)
-#print(ys)
-
-
-
-print('norm',norm)
-t=minimize(lambda z:-1*g2(z)/norm,0.01,bounds=((0,zm),))
-print('probMax: ',-1*t.fun[0])
-#ys=ys/norm
-print('trapz: ',integrate.trapz(ys,xs))
+def probFunTest(x):
+    if (x>=0 and x <= 4):
+        return (x**3)/64
+    else:
+        return 0
+print(integrate.quad(probFunTest,0,4))
+        
+xs = np.linspace(0,5,num=100)
+probFunTestVect=np.vectorize(probFunTest)
+ys=probFunTestVect(xs)
 plt.plot(xs,ys)
 plt.show()
-data=np.loadtxt('data/mass/ABHBH02_mass_A_6400_a0.0.gz')[:,0]
-print(max(data))
 
+print(InverseTransformSampling(probFunTest))        
+        
+#data=[]
+#for t in range(0,1):
+#    data.append(InverseTransformSampling(probFunTest))
+#plt.hist(data,bins=100)
+#plt.show()
+"""
             
 
+####szybki wykres DNSDistribution_z
+#coef=0
+#A=6400
+#mz=13.054006
+#zm=zMaxGet(A,mz)
+#g2=lambda x: DNSDistribution(x,lambda z:(1+z)**coef,zm)
+#print('najierw TU: ',g2(.1))
+#norm=integrate.quad(g2,0,zm)[0]
+#print('zmax: ',zm)
+#xs=np.linspace(0,zm,num=1000)
+#ys=[]
+#for x in xs:
+#    ys.append(DNSDistribution(x,lambda z:(1+z)**coef,zm)/norm)
+#ys=np.array(ys)
+##print(ys)
+#
+#
+#
+#print('norm',norm)
+#t=minimize(lambda z:-1*g2(z)/norm,0.01,bounds=((0,zm),))
+#print('probMax: ',-1*t.fun[0])
+##ys=ys/norm
+#print('trapz: ',integrate.trapz(ys,xs))
+#plt.plot(xs,ys)
+#plt.show()
+#data=np.loadtxt('data/mass/ABHBH02_mass_A_6400_a0.0.gz')[:,0]
+#print(max(data))
+#
+#            
+#
