@@ -6,17 +6,19 @@ from histograms import histAndSaveLogLog
 from scipy import integrate
 import time
 
+A=800
+#size=100000
+binsNr=201
 def round_down(num, divisor):
     return num - (num%divisor)
-    
-A=800  
+
 def interpolateSNR(modelCoef):
     dataModel=np.loadtxt("SNR/"+str(A)+"/SNRv3_mSU02_a"+str(modelCoef)+"_A"+str(A)+"_sample100000.txt")[:,0]
     binsNr=201
-    histData=plt.hist(dataModel,bins=np.logspace(start=np.log10(min(dataModel)),stop=np.log10(max(dataModel)),\
+    histData=np.histogram(dataModel,bins=np.logspace(start=np.log10(min(dataModel)),stop=np.log10(max(dataModel)),\
         num=binsNr),normed=True)
-    plt.show()
-    plt.clf()
+#    plt.show()
+#    plt.clf() #### 
     ys=histData[0]
     xs=histData[1][:-1]
     #ys=[i for i in ys if i !=0]
@@ -36,15 +38,15 @@ def interpolateSNR(modelCoef):
     xInterpolatedMin=min(xs)
     f1=interp1d(xs,ys,kind='linear')
     return f1,xInterpolatedMin,xInterpolatedMax
-    
+     
 f0,xInterpolatedMin0,xInterpolatedMax0=interpolateSNR(modelCoef=0)
-xs1=np.linspace(xInterpolatedMin0,xInterpolatedMax0,num=6000)
-ys1=f0(xs1)
-print('simps int: ',integrate.simps(ys1,xs1))
-plt.gca().set_xscale("log")
-plt.gca().set_yscale("log")
-plt.plot(xs1,ys1,'g')
-plt.savefig('model0.png')
+#xs1=np.linspace(xInterpolatedMin0,xInterpolatedMax0,num=6000)
+#ys1=f0(xs1)
+#print('simps int: ',integrate.simps(ys1,xs1))
+#plt.gca().set_xscale("log")
+#plt.gca().set_yscale("log")
+#plt.plot(xs1,ys1,'g')
+#plt.savefig('model0.png')
 
 #binsNr=600
 #data=np.loadtxt('SNR/1600/SNRv3_mSU02_a0_A1600_sample100000.gz')[:,0]
@@ -53,19 +55,31 @@ plt.savefig('model0.png')
 
 
 f1,xInterpolatedMin1,xInterpolatedMax1=interpolateSNR(modelCoef=1)
+print('f1 interpol: ',f1(9))
+#xs1=np.linspace(xInterpolatedMin1,xInterpolatedMax1,num=6000)
+#ys1=f1(xs1)
+#print('simps int: ',integrate.simps(ys1,xs1))
+#plt.gca().set_xscale("log")
+#plt.gca().set_yscale("log")
+#plt.plot(xs1,ys1,'r')
+#plt.savefig('model1.png')
+#plt.show()
+#plt.clf()
+
+
+xInterpolatedMin=max(xInterpolatedMin1,xInterpolatedMin0)
+xInterpolatedMax=min(xInterpolatedMax1,xInterpolatedMax0)
+
+
 xs1=np.linspace(xInterpolatedMin1,xInterpolatedMax1,num=6000)
 ys1=f1(xs1)
 print('simps int: ',integrate.simps(ys1,xs1))
 plt.gca().set_xscale("log")
 plt.gca().set_yscale("log")
+plt.title('prob bins fun')
 plt.plot(xs1,ys1,'r')
 plt.savefig('model1.png')
 plt.show()
-plt.clf()
-
-
-xInterpolatedMin=max(xInterpolatedMin1,xInterpolatedMin0)
-xInterpolatedMax=min(xInterpolatedMax1,xInterpolatedMax0)
 
 
 def MLM(size,samples):
@@ -82,9 +96,9 @@ def MLM(size,samples):
     print('b1',[i for i in dataSample1 if i <=0])
     for t in range(int(newSamples/size)):
 #        print(t)
-        slice1=dataSample1[t*size :(t+1)*size]
-        Ps1=f1(slice1) 
-        Ps0=f0(slice1) 
+        slice=dataSample1[t*size :(t+1)*size]
+        Ps1=f1(slice) 
+        Ps0=f0(slice) 
         L1=np.prod(Ps1)
         L0=np.prod(Ps0)
 #        print(L0,L1)
@@ -105,14 +119,12 @@ def MLM(size,samples):
     return Os
     
 
-print('loaded')
-samples=10000
-for t in [60,100]:
-    MLM(size=t,samples=samples)
-A=1600    
-for t in [3,6,10,30,60,100]:
-    MLM(size=t,samples=samples)
-import subprocess
-subprocess.call(["shutdown", "/s"])
+#print('loaded')
+#samples=10000
+#for t in [3,6,10,30,60,100]:
+#    MLM(size=t,samples=samples)
+    
+#import subprocess
+#subprocess.call(["shutdown", "/s"])
 
 
