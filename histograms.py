@@ -1,41 +1,41 @@
-from mpl_toolkits.mplot3d import Axes3D
+#from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
+#import matplotlib.colors as colors
 import numpy as np
-from numba import jit
+#from numba import jit
 
-def plotHist3D(mrange):
-    sampleData=np.loadtxt("data/v3/"+f+"_sample100000.gz")
-    maxSNR=max(sampleData[:,0])
-    minSNR=8
-    maxMz=max(sampleData[:,4])
-    minMz=1
-    binsSNR=200
-    binsMz=200
-#    xedges = np.linspace(minSNR,maxSNR,binsSNR)
-#    yedges = np.linspace(minMz,maxMz,binsMz)
-    xedges=np.logspace(start=np.log10(minSNR),stop=np.log10(maxSNR),num=binsSNR)
-    yedges=np.logspace(start=np.log10(minMz),stop=np.log10(maxMz),num=binsMz)
-    x=sampleData[:,0]
-    y=sampleData[:,4]
-    fig = plt.figure(figsize=(7, 3))
-    H, xedges, yedges = np.histogram2d(x, y, bins=(xedges, yedges))
-    H = H.T  # Let each row list bins with common y range.
-    ax = fig.add_subplot(111, title=f)
-    plt.xlabel('SNR')
-    plt.ylabel('Mz')
-    plt.tick_params(direction= "inout",which="both")
-
-    X, Y = np.meshgrid(xedges, yedges)
-    p=ax.pcolormesh(X, Y, H,norm=colors.LogNorm(vmin=1, vmax=H.max()))
-    plt.gca().set_xscale("log")
-    plt.gca().set_yscale("log")
-    plt.xlim((7,1000))
-    plt.ylim(mrange)
-    cbar=plt.colorbar(p)
-    cbar.ax.set_ylabel('dP/dMz dSNR')
-    plt.show()
-    plt.savefig("pics/v3/"+f+"_sample100000_3D.png",dpi=300)
+#def plotHist3D(mrange):
+#    sampleData=np.loadtxt("data/v3/"+f+"_sample100000.gz")
+#    maxSNR=max(sampleData[:,0])
+#    minSNR=8
+#    maxMz=max(sampleData[:,4])
+#    minMz=1
+#    binsSNR=200
+#    binsMz=200
+##    xedges = np.linspace(minSNR,maxSNR,binsSNR)
+##    yedges = np.linspace(minMz,maxMz,binsMz)
+#    xedges=np.logspace(start=np.log10(minSNR),stop=np.log10(maxSNR),num=binsSNR)
+#    yedges=np.logspace(start=np.log10(minMz),stop=np.log10(maxMz),num=binsMz)
+#    x=sampleData[:,0]
+#    y=sampleData[:,4]
+#    fig = plt.figure(figsize=(7, 3))
+#    H, xedges, yedges = np.histogram2d(x, y, bins=(xedges, yedges))
+#    H = H.T  # Let each row list bins with common y range.
+#    ax = fig.add_subplot(111, title=f)
+#    plt.xlabel('SNR')
+#    plt.ylabel('Mz')
+#    plt.tick_params(direction= "inout",which="both")
+#
+#    X, Y = np.meshgrid(xedges, yedges)
+#    p=ax.pcolormesh(X, Y, H,norm=colors.LogNorm(vmin=1, vmax=H.max()))
+#    plt.gca().set_xscale("log")
+#    plt.gca().set_yscale("log")
+#    plt.xlim((7,1000))
+#    plt.ylim(mrange)
+#    cbar=plt.colorbar(p)
+#    cbar.ax.set_ylabel('dP/dMz dSNR')
+#    plt.show()
+#    plt.savefig("pics/v3/"+f+"_sample100000_3D.png",dpi=300)
 
 ##print("upps i did it again")
 #for a in range(0,2):
@@ -75,12 +75,20 @@ def histAndSaveLogLog(data,xLab,yLab,title,saveName,xrange=0,normed=False,yLog=T
 #    plt.show()
     return histData
 
-#plt.rc('text', usetex=False)
-#for a in range(0,2):
-#    for A in [1600]:#,8000]:
+plt.rc('text', usetex=False)
+#for a in range(0,1):
+#    for A in [16000]:#,8000]:
 #        print(a,A)
-#        x=np.loadtxt("SNR/"+str(A)+"/SNRv3_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.gz")[:,0]
-#        histAndSaveLogLog(x,'SNR','dN/dSNR',"SNRv3_mSU02_a"+str(a)+"_A"+str(A),\
-#                            "SNR/"+str(A)+"/SNRv3_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.png",\
+#        x=np.loadtxt("SNR/"+str(A)+"/SNR_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.gz")[:,0]
+#        histAndSaveLogLog(x,'SNR','dN/dSNR',"SNR_mSU02_a"+str(a)+"_A"+str(A),\
+#                            "SNR/"+str(A)+"/SNR_mSU02_a"+str(a)+"_A"+str(A)+"_sample100000.png",\
 #        xrange=(8,1000),normed=False)
 #        plt.clf()
+A=16000
+x=np.loadtxt("SNR/"+str(A)+"/SNR2_mSU02_SFR_A"+str(A)+"_sample100000.gz")[:,0]
+histAndSaveLogLog(x,'SNR','dN/dSNR',"SNR2_mSU02_SFR_A"+str(A),\
+                "SNR/"+str(A)+"/SNR2_mSU02_SFR_A"+str(A)+"_sample100000.png",\
+        xrange=(8,1000),normed=False)
+
+#data=np.loadtxt('SNR/800/SNR_mSU02_a1_A800_sample100000.gz')[:,3]
+#histAndSaveLogLog(data,'','','','zsa1.png')

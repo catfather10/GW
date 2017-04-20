@@ -1,10 +1,12 @@
 from scipy import integrate
 import numpy as np
-from numpy.random import random as rng
 import matplotlib.pyplot as plt
-from scipy.optimize import fsolve
+from numpy.random import random as rng
+from scipy.optimize import fsolve,brentq
 from numba import jit
-from scipy.optimize import minimize
+
+from InterpPdf import InterpPdf
+
 plt.rc('text', usetex=True)
 
 ####stałe
@@ -50,65 +52,92 @@ def MonteCarloSampling(probFun,xRange,yRange):
         x=rng()*(xRange[1]-xRange[0])+xRange[0]
         y=rng()*(yRange[1]-yRange[0])+yRange[0]
         if(probFun(x)>y):
+            print('wylosowano po',k)
             return x
             
-'''
-def InverseTransformSampling(probFun):
+@jit(nopython=True)           
+def SFR(z):
+    return (1+z**2.7)/(1+((1+z)/2.9)**5.6)
+    
+def inverseSampling(intpdf):
     u=rng()
-    toSolve=lambda x: integrate.quad(probFun,0,x)[0] -u
-    return fsolve(toSolve,0)[0]
-'''
-"""
-def probFunTest(x):
-    if (x>=0 and x <= 4):
-        return (x**3)/64
-    else:
-        return 0
-print(integrate.quad(probFunTest,0,4))
-        
-xs = np.linspace(0,5,num=100)
-probFunTestVect=np.vectorize(probFunTest)
-ys=probFunTestVect(xs)
-plt.plot(xs,ys)
-plt.show()
+    toSolve = lambda x: intpdf.cdf(x)-u
+    return brentq(toSolve,a=intpdf.xrange[0],b=intpdf.xrange[1],disp=True)
 
-print(InverseTransformSampling(probFunTest))        
-        
-#data=[]
-#for t in range(0,1):
-#    data.append(InverseTransformSampling(probFunTest))
-#plt.hist(data,bins=100)
-#plt.show()
-"""
-            
+def rejectionEnvelopeSampling(probFun,intpdf):
+    k=0
+    while (True):
+        k+=1
+        u=rng()
+        x=inverseSampling(intpdf)
+        if(u<probFun(x)/(intpdf.pdf(x)*intpdf.norm)):
+#            print('wylosowano po',k)
+            return x  
 
-####szybki wykres DNSDistribution_z
-#coef=0
-#A=6400
-#mz=13.054006
-#zm=zMaxGet(A,mz)
-#g2=lambda x: DNSDistribution(x,lambda z:(1+z)**coef,zm)
-#print('najierw TU: ',g2(.1))
-#norm=integrate.quad(g2,0,zm)[0]
-#print('zmax: ',zm)
-#xs=np.linspace(0,zm,num=1000)
-#ys=[]
+"""
+nowe zabawki
+"""
+
+A=16000
+mmax=max(np.loadtxt('mass/ABHBH02_mass.gz'))
+zm=zMaxGet(A,mmax)
+xs=np.logspace(np.log10(0.001),np.log10(zm),num=1000)
+print('zMax',zm)
+
+print('######### SFR #########')
+xspointsSFR=[0,5,6.5,20,zm+1]
+yspointsSFR=[.35,.35,.03,.0004,.0001]
+plt.plot(xspointsSFR,yspointsSFR,'o')
+fintSFR=InterpPdf(xspointsSFR,yspointsSFR)
+ysInterpSFR=[]
+for x in xs:
+    ysInterpSFR.append(fintSFR(x))
+plt.plot(xs,ysInterpSFR,label='interp')
+vDNSDistribution=np.vectorize(DNSDistribution)
+print('normaSFR',integrate.quad(lambda z:DNSDistribution(z,SFR,zm),0,zm)[0])
+normSFR=integrate.quad(lambda z:DNSDistribution(z,SFR,zm),0,zm)[0]
+fSFR=lambda x:vDNSDistribution(x,SFR,zm)/normSFR
+
+flag=False
+for i in xs:
+    if(fintSFR(i)<fSFR(i)):
+        print('tu sie psuje',i)
+        flag=True
+        
+        break
+print('flaga',flag)
+plt.plot(xs,fSFR(xs),label='SFR')
+print(integrate.simps(fSFR(xs),xs))
+plt.legend(loc=0)
+plt.clf()
+
+#print('######### a0 #########')
+#fModelProb=lambda x: 1
+#xspointsModel=[0,5,8,20,55,zm+1]
+#yspointsModel=[.12,.12,.03,.008,.001,.0001]
+#plt.plot(xspointsModel,yspointsModel,'o')
+#fintModel=InterpPdf(xspointsModel,yspointsModel)
+#ysInterpModel=[]
 #for x in xs:
-#    ys.append(DNSDistribution(x,lambda z:(1+z)**coef,zm)/norm)
-#ys=np.array(ys)
-##print(ys)
+#    ysInterpModel.append(fintModel(x))
+#plt.plot(xs,ysInterpModel,label='interp')
+#vDNSDistribution=np.vectorize(DNSDistribution)
+#print('normaModel',integrate.quad(lambda z:DNSDistribution(z,fModelProb,zm),0,zm)[0])
+#normModel=integrate.quad(lambda z:DNSDistribution(z,SFR,zm),0,zm)[0]
+#fModel=lambda x:vDNSDistribution(x,fModelProb,zm)/normModel
 #
-#
-#
-#print('norm',norm)
-#t=minimize(lambda z:-1*g2(z)/norm,0.01,bounds=((0,zm),))
-#print('probMax: ',-1*t.fun[0])
-##ys=ys/norm
-#print('trapz: ',integrate.trapz(ys,xs))
-#plt.plot(xs,ys)
-#plt.show()
-#data=np.loadtxt('data/mass/ABHBH02_mass_A_6400_a0.0.gz')[:,0]
-#print(max(data))
-#
-#            
-#
+#flag=False
+#for i in xs:
+#    if(fintModel(i)<fModel(i)):
+#        print('tu sie psuje',i)
+#        flag=True
+#        
+#        break
+#print('flaga',flag)
+#plt.plot(xs,fModel(xs),label='Model')
+#print(integrate.simps(fModel(xs),xs))
+#plt.legend(loc=0)
+#plt.clf()
+
+
+print('########## koniec baseFun ##########')
