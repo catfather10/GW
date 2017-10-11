@@ -260,6 +260,7 @@ envelopeSFRET=prepCustomSamplerEnvelope('SU02',([0,1.6,2.2,4,6,10],[0,.39,.38,.1
 envelopeGCET=prepCustomSamplerEnvelope('GC',([0,1,1.7,2.7,6,10],[0,0.2,.55,0.25,.034,0]),'ET',GCMRD,"GC")
 envelopeCHEET=prepCustomSamplerEnvelope('CHE',([0,.5,.65,1.2,1.7,10],[0,1.7,1.55,.3,0,0]),'ET',CHEMRD,"CHE")
 
+####qwerty
 
 
 
