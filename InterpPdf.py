@@ -62,8 +62,4 @@ class InterpPdf(object):
         integral+=(self.aarray[i]/2*x**2+self.barray[i]*x)\
                     -(self.aarray[i]/2*self.xs[i]**2+self.barray[i]*self.xs[i])
         return integral/self.norm
-        
 
-            
-            
-    
