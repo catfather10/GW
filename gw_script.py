@@ -24,6 +24,8 @@ Omega_lambda=1-Omega_m
 c=299792 # km/s
 D_H=c/H_0
 
+print(os.getcwd())
+
 @jit(nopython=True) 
 def E(z):
     return np.sqrt(Omega_m*(1+z)**3+(1-Omega_m))
@@ -169,6 +171,7 @@ def generateSample(name,sampleSize,detector,mergerRateFun,massFName,\
     fNameToCheck="mass/"+massFName+"_mass.txt"
     my_file = Path(fNameToCheck)
     if (not my_file.is_file()):
+        print(os.getcwd())
         print("nie znaleziono pliku z masami")
         return -1
     else:
@@ -213,12 +216,14 @@ def generateSample(name,sampleSize,detector,mergerRateFun,massFName,\
     SNRs,sampleData=np.array(SNRs),np.array(sampleData)
     if(saveFlag):
         if(savePath!=''):
+                oldPath=os.getcwd()
                 os.chdir(savePath)
         if(not os.path.isdir('SNR')):
                 os.mkdir('SNR')
         if(not os.path.isdir('SNR/'+detector)):
                 os.mkdir('SNR/'+detector)
         np.savetxt("SNR/"+detector+"/"+name+detector+"_sample"+str(sampleSize)+".gz",sampleData)
+        os.chdir(oldPath)
         #np.savetxt("SNR/"+detector+"/"+name+detector+"_sample"+str(sampleSize)+".txt",SNRs)
     doneTime = time.time()
     print('Done in this many minutes: '+str((doneTime-startTime)/60))
@@ -260,7 +265,6 @@ envelopeSFRET=prepCustomSamplerEnvelope('SU02',([0,1.6,2.2,4,6,10],[0,.39,.38,.1
 envelopeGCET=prepCustomSamplerEnvelope('GC',([0,1,1.7,2.7,6,10],[0,0.2,.55,0.25,.034,0]),'ET',GCMRD,"GC")
 envelopeCHEET=prepCustomSamplerEnvelope('CHE',([0,.5,.65,1.2,1.7,10],[0,1.7,1.55,.3,0,0]),'ET',CHEMRD,"CHE")
 
-####qwerty
 
 
 
