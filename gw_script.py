@@ -266,6 +266,6 @@ envelopeGCET=prepCustomSamplerEnvelope('GC',([0,1,1.7,2.7,6,10],[0,0.2,.55,0.25,
 envelopeCHEET=prepCustomSamplerEnvelope('CHE',([0,.5,.65,1.2,1.7,10],[0,1.7,1.55,.3,0,0]),'ET',CHEMRD,"CHE")
 
 
-
+##### tescik
 
 print('########## koniec baseFun ##########')
