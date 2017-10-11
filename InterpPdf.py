@@ -1,3 +1,5 @@
+#!/home/mossowski/python-virtualenvs/myenv3.5/bin/python3
+
 # -*- coding: utf-8 -*-
 """
 Created on Wed Apr 19 17:43:10 2017
@@ -10,20 +12,19 @@ import numpy as np
 
 class InterpPdf(object):
     def __init__(self, xs, ys):
-
         self.xs=np.array(xs)
         self.ys=np.array(ys)
         self.xrange=(min(xs),max(xs))
         self.aarray=[]
         self.barray=[]
-        print('xs',xs)
-        print('ys',ys)
+#        print('xs',self.xs)
+#        print('ys',self.ys)
         self.partialIntegrals=[]
 
         if (len(xs)!=len(ys)):
             print('rozna ilosc danych')
             return -1
-        if sorted(xs) != xs:
+        if (not np.array_equal(self.xs,np.sort(self.xs))):
             print('x nie posortowne')
             return -1
 
