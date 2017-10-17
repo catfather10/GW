@@ -255,10 +255,10 @@ def sklejka(model,part,path,indices,totalFiles=116):
         files=[]
         for i in range(part*totalFiles,(part+1)*totalFiles):
             print(i)
-            data=np.loadtxt('SNR/AdLigo/snr-'+str(i)+model+'AdLigo_sample100000.gz')[:,indices]
-            files.append(np.loadtxt('SNR/AdLigo/snr-'+str(i)+model+'AdLigo_sample100000.gz'))
+            data=np.loadtxt(path+'SNR/AdLigo/snr-'+str(i)+model+'AdLigo_sample100000.gz')[:,indices]
+            files.append(data)
         masterFile=np.concatenate(files)
-        np.savetxt('path/SNR/AdLigo/SNR_'+model+'master'+str(part)+'.gz',masterFile)
+        np.savetxt(path+'SNR/AdLigo/SNR_'+model+'master'+str(part)+str(indices)+'.txt',masterFile)
         
 
 ###################### SETUP
