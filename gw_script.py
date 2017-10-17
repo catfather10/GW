@@ -16,6 +16,9 @@ from logInterp import logInterp
 from pathlib import Path
 import time
 
+#### SAVE ORDER
+## SNR,Dl,M,z,Th,Ph,Ps,Io
+
 
 ##### stałe
 H_0=70.4 # km/s  Mpc^-1
@@ -246,6 +249,17 @@ def makeSFR():
     f=interp1d(xs,ys)
     ys=0
     return f
+
+
+def sklejka(model,part,path,indices,totalFiles=116):
+        files=[]
+        for i in range(part*totalFiles,(part+1)*totalFiles):
+            print(i)
+            data=np.loadtxt('SNR/AdLigo/snr-'+str(i)+model+'AdLigo_sample100000.gz')[:,indices]
+            files.append(np.loadtxt('SNR/AdLigo/snr-'+str(i)+model+'AdLigo_sample100000.gz'))
+        masterFile=np.concatenate(files)
+        np.savetxt('path/SNR/AdLigo/SNR_'+model+'master'+str(part)+'.gz',masterFile)
+        
 
 ###################### SETUP
 CHEMRD=makeCHEmergerRate()
