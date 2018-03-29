@@ -43,8 +43,10 @@ def D_L(z):
 
 def zMaxGet(detector,m):
   #  print('det',detector)
-    if(detector=='AdLigo'):
-        detSen=AdLigo
+    if(detector=='AdLigoDesign'):
+        detSen=AdLigoDesign
+    elif(detector=='AdLigoH1'):
+        detSen=AdLigoH1
         #print('wybrano detector ADL')
     elif(detector=='ET'):
         #print('wybrano detector ET')
@@ -81,10 +83,9 @@ def MonteCarloSampling(probFun,xRange,yRange):
             return x
             
     
-def inverseSampling(intpdf):
+def inverseSampling(invCDF):
     u=rng()
-    toSolve = lambda x: intpdf.cdf(x)-u
-    return brentq(toSolve,a=intpdf.xrange[0],b=intpdf.xrange[1],disp=True)
+    return invCDF(u)
 
 def rejectionEnvelopeSampling(probFun,intpdf):
     k=0
@@ -122,10 +123,17 @@ def prepCustomSamplerEnvelope(massFile,points,detector,MRD,modelName=''):
             return -1
     return fint
 
-def prepAdLigo():
-    data = np.genfromtxt('data/AdLigoSensitivity.csv', delimiter=',')
+def prepAdLigoDesign():
+    data = np.genfromtxt('data/AdLigoSensitivityDesign.csv', delimiter=',')
     AdLigo=logInterp(data[:,0],data[:,1])
-    return lambda z:AdLigo(z)*2 ##  *2 - bo wczesniej zle policzone
+    return lambda z:AdLigo(z)*2 
+
+def prepAdLigoH1():
+    data = np.genfromtxt('data/AdLigoSensitivityH1.csv', delimiter=',')
+    AdLigo=logInterp(data[:,0],data[:,1])
+    return lambda z:AdLigo(z)*2
+
+
 
 
 def prepET():
@@ -133,7 +141,7 @@ def prepET():
     xs=data[:,0]*.44
     ys=data[:,1]*4/2.26
     ET=logInterp(xs,ys)
-    return lambda z:ET(z)*2 ##  *2 - bo wczesniej zle policzone
+    return lambda z:ET(z)*2 
 
 def makeGCmergerRateDensity():
     data=np.loadtxt('data/GCrdensity.dat')
@@ -146,7 +154,7 @@ def makeGCmergerRateDensity():
 def randMass():
     return massesData[np.random.randint(0,massesData.size)]
 
-def randNS(detector,zProb,redshiftSampler):
+def randNS(detector,redshiftSampler):
     cosTh=rng()*2 -1
     Theta=np.arccos(cosTh)
     Phi=2*np.pi*rng()
@@ -154,10 +162,12 @@ def randNS(detector,zProb,redshiftSampler):
     Iota=np.arccos(cosIo)
     Psi=2*np.pi*rng()
     M=randMass()
-    randomZ=redshiftSampler(zProb)
+    randomZ=redshiftSampler()
     Dl=D_L(randomZ)  
-    if(detector=='AdLigo'):
-        A=AdLigo(M*(1+randomZ))
+    if(detector=='AdLigoDesign'):
+        A=AdLigoDesign(M*(1+randomZ))
+    elif(detector=='AdLigoH1'):
+        A=AdLigoH1(M*(1+randomZ))
     elif(detector=='ET'):
         A=ET(M*(1+randomZ))
     else:
@@ -166,12 +176,12 @@ def randNS(detector,zProb,redshiftSampler):
     return (SNR(Dl,Theta,Phi,Psi,Iota,A) ,Dl,M,randomZ,Theta,Phi,Psi,Iota)
           
 def generateSample(name,sampleSize,detector,mergerRateFun,massFName,\
-                    customSamplerEnvelope=False,saveFlag=True,savePath=''):
+                    saveFlag=True,savePath=''):
     print('########## generateSample ##########')
     print(detector)
     startTime = time.time()  
     print('massFName',massFName)
-    fNameToCheck="mass/"+massFName+"_mass.txt"
+    fNameToCheck="mass/"+massFName+".txt"
     my_file = Path(fNameToCheck)
     if (not my_file.is_file()):
         print(os.getcwd())
@@ -183,7 +193,7 @@ def generateSample(name,sampleSize,detector,mergerRateFun,massFName,\
         massesData=np.loadtxt(fNameToCheck)
 
         
-    zMaxGeneral=zMaxGet(detector,max(np.loadtxt('mass/'+massFName+'_mass.txt')))
+    zMaxGeneral=zMaxGet(detector,max(np.loadtxt('mass/'+massFName+'.txt')))
     if (zMaxGeneral>10):
         zMaxGeneral=10
     print('zMaxGeneral',zMaxGeneral)
@@ -193,18 +203,50 @@ def generateSample(name,sampleSize,detector,mergerRateFun,massFName,\
     toMinimize=minimize(lambda z:-1*DNSonlyZ(z)/normGeneral,0.01,bounds=((0,zMaxGeneral),))
     probMaxGeneral=-1*toMinimize.fun[0]
     zPDF=lambda z:binaryDistribution(z,mergerRateFun,zMaxGeneral)/normGeneral
-       
-    if(customSamplerEnvelope==False):
-        print('MonteCarloSampler')
-        sampler=lambda pdf: MonteCarloSampling(pdf,(0,zMaxGeneral+.1),(0,probMaxGeneral+.1))
-    else:
-        print("using envelope rejection sampling")
-        sampler= lambda pdf:rejectionEnvelopeSampling(pdf,customSamplerEnvelope)
+    vectzPDF=np.vectorize(zPDF)
+
+
+    ## nowy invserse sampling
+    zToInv=np.linspace(0,zMaxGeneral,num=1000,endpoint=True)
+    yToInv=vectzPDF(zToInv)
+    integs, yy=[], []
+    for i in range(len(zToInv)):
+        integs.append(integrate.simps(yToInv[:i+1],zToInv[:i+1])) ## tablicowanie CDF
+    zCDF=interp1d(zToInv,integs)
+     
+    zzz=np.linspace(0,zMaxGeneral,1e5,endpoint=True)
+    zz=np.linspace(0,zMaxGeneral,num=1e3)
+    ts=np.linspace(0,1,num=1e3,endpoint=False)
+
+    for t in ts:
+        toSolve =lambda z: zCDF(z)-t
+        yy.append(brentq(toSolve,a=0,b=zMaxGeneral,disp=True)) ### tablicowanie invCDF
+    yy.append(zMaxGeneral)
+    ts=np.append(ts,1)
+    invCDF=interp1d(ts,yy)
+    sampler = lambda :invCDF(rng())
+
+    tohist=[]
+    for i in range(10**5):
+        tohist.append(sampler())
+    import matplotlib.pyplot as plt
+    plt.hist(tohist,bins=100,normed=True)
+    plt.plot(zz,vectzPDF(zz)/integrate.simps(vectzPDF(zz),zz))
+    plt.xlabel('z')
+    plt.savefig(name+'.png',dpi=300)
+    plt.show()
+   
+    #if(customSamplerEnvelope==False):
+    #    print('MonteCarloSampler')
+    #    sampler=lambda pdf: MonteCarloSampling(pdf,(0,zMaxGeneral+.1),(0,probMaxGeneral+.1))
+    #else:
+    #    print("using envelope rejection sampling")
+    #    sampler= lambda pdf:rejectionEnvelopeSampling(pdf,customSamplerEnvelope)
     
     draws,k,current,last,SNRs,sampleData=0,0,0,0,[],[]
     while(k<sampleSize):
         draws+=1
-        randomSample=randNS(detector,zPDF,sampler)
+        randomSample=randNS(detector,sampler)
         tempSNR=randomSample[0]
         if(tempSNR>8):
             SNRs.append(tempSNR)
@@ -265,19 +307,20 @@ def sklejka(model,part,path,indices,totalFiles=116):
 CHEMRD=makeCHEmergerRate()
 GCMRD=makeGCmergerRateDensity()
 SFR=makeSFR()
-AdLigo=prepAdLigo()
+AdLigoDesign=prepAdLigoDesign()
+AdLigoH1=prepAdLigoH1()
 ET=prepET()
 
 ######## envelopes
-envelopeSFRAdLigo=prepCustomSamplerEnvelope('SU02',([0,.2,.4,0.69],[0.1,.5,2,4.5]),'AdLigo',SFR,"SFR")
-envelopeGCAdLigo=prepCustomSamplerEnvelope('GC',([0,1.25,1.65,1.98],[0,.7,1.3,1.1]),'AdLigo',GCMRD,"GC")
-envelopea0AdLigo=prepCustomSamplerEnvelope('SU02',([0,.12,0.69],[0,.4,3.5]),'AdLigo',lambda z:1,"a0")
-envelopeCHEAdLigo=prepCustomSamplerEnvelope('CHE',([0,.5,.7,1.2,1.87],[0,1.7,1.6,.2,.05]),'AdLigo',CHEMRD,"CHE")
+#envelopeSFRAdLigoDesign=prepCustomSamplerEnvelope('SU02',([0,.2,.4,0.69],[0.1,.5,2,4.5]),'AdLigoDesign',SFR,"SFR")
+#envelopeGCAdLigoDesign=prepCustomSamplerEnvelope('GC',([0,1.25,1.65,1.98],[0,.7,1.3,1.1]),'AdLigoDesign',GCMRD,"GC")
+#envelopea0AdLigoDesign=prepCustomSamplerEnvelope('SU02',([0,.12,0.69],[0,.4,3.5]),'AdLigoDesign',lambda z:1,"a0")
+#envelopeCHEAdLigoDesign=prepCustomSamplerEnvelope('CHE',([0,.5,.7,1.2,1.87],[0,1.7,1.6,.2,.05]),'AdLigoDesign',CHEMRD,"CHE")
 
-envelopea0ET=prepCustomSamplerEnvelope('SU02',([0,.9,2,6,10],[0,.22,.23,.072,.03]),'ET',lambda z:1,"a0")
-envelopeSFRET=prepCustomSamplerEnvelope('SU02',([0,1.6,2.2,4,6,10],[0,.39,.38,.125,.03,0.01]),'ET',SFR,"SFR")
-envelopeGCET=prepCustomSamplerEnvelope('GC',([0,1,1.7,2.7,6,10],[0,0.2,.55,0.25,.034,0]),'ET',GCMRD,"GC")
-envelopeCHEET=prepCustomSamplerEnvelope('CHE',([0,.5,.65,1.2,1.7,10],[0,1.7,1.55,.3,0,0]),'ET',CHEMRD,"CHE")
+#envelopea0ET=prepCustomSamplerEnvelope('SU02',([0,.9,2,6,10],[0,.22,.23,.072,.03]),'ET',lambda z:1,"a0")
+#envelopeSFRET=prepCustomSamplerEnvelope('SU02',([0,1.6,2.2,4,6,10],[0,.39,.38,.125,.03,0.01]),'ET',SFR,"SFR")
+#envelopeGCET=prepCustomSamplerEnvelope('GC',([0,1,1.7,2.7,6,10],[0,0.2,.55,0.25,.034,0]),'ET',GCMRD,"GC")
+#envelopeCHEET=prepCustomSamplerEnvelope('CHE',([0,.5,.65,1.2,1.7,10],[0,1.7,1.55,.3,0,0]),'ET',CHEMRD,"CHE")
 
 
 ##### tescik
