@@ -229,13 +229,14 @@ def generateSample(name,sampleSize,detector,mergerRateFun,massFName,\
     tohist=[]
     for i in range(10**5):
         tohist.append(sampler())
+        """
     import matplotlib.pyplot as plt
     plt.hist(tohist,bins=100,normed=True)
     plt.plot(zz,vectzPDF(zz)/integrate.simps(vectzPDF(zz),zz))
     plt.xlabel('z')
     plt.savefig(name+'.png',dpi=300)
     plt.show()
-   
+   """
     #if(customSamplerEnvelope==False):
     #    print('MonteCarloSampler')
     #    sampler=lambda pdf: MonteCarloSampling(pdf,(0,zMaxGeneral+.1),(0,probMaxGeneral+.1))
